@@ -1,0 +1,4 @@
+tinymorph
+=========
+
+Tiny morphology library
