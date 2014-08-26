@@ -11,6 +11,7 @@ michael@drozdovsky.com
 """
 import sys
 import pickle
+import random
 
 
 class Morphology(object):
@@ -77,3 +78,72 @@ class Morphology(object):
             return word_forms[0]
 
         return None
+
+
+class Synonymizer(Morphology):
+    """
+    Morphology-based synonymizer implementation
+    """
+    def __init__(self, *args, **kwargs):
+        super(Synonymizer, self).__init__(*args, **kwargs)
+        self.synonym_refs = {}
+
+    def compile_synonyms(self, source_file):
+        # создаем словарь синонимов
+        with open(source_file, 'r') as f:
+            for line in f:
+                try:
+                    word, synonym = line.lower().strip().split('\t')
+                    if word not in self.search_dict:
+                        continue
+
+                    if synonym not in self.search_dict:
+                        continue
+
+                    w_ref = self.search_dict[word]
+                    s_ref = self.search_dict[synonym]
+
+                    if w_ref not in self.synonym_refs:
+                        self.synonym_refs[w_ref] = []
+
+                    if s_ref not in self.synonym_refs:
+                        self.synonym_refs[s_ref] = []
+
+                    self.synonym_refs[w_ref].append(s_ref)
+                    self.synonym_refs[s_ref].append(w_ref)
+                except ValueError:
+                    break
+
+    def synonymize_me(self, word):
+        # синонимизируем слово
+        word = word.lower().strip()
+
+        if word not in self.search_dict:
+            return None
+
+        word_id = self.search_dict[word]
+        synonyms = self.synonym_refs.get(word_id)
+
+        if not synonyms:
+            return None
+
+        wordforms = self.get_forms(word)
+
+        if not wordforms:
+            return None
+
+        # ищем синонимы
+        synonyms = self.search_dict[word]
+
+        word_index = None
+        for i, val in enumerate(wordforms):
+            if val == word:
+                word_index = i
+                break
+
+
+
+if __name__ == '__main__':
+    snzr = Synonymizer()
+    snzr.compile_synonyms('russian.big.syn')
+    print('FA')
