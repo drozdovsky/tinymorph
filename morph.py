@@ -9,6 +9,7 @@ Provided 'as is' and completely free :-)
 Michael Drozdovsky, 2014
 michael@drozdovsky.com
 """
+import os
 import sys
 import pickle
 import random
@@ -86,7 +87,9 @@ class Synonymizer(Morphology):
     """
     def __init__(self, *args, **kwargs):
         super(Synonymizer, self).__init__(*args, **kwargs)
+
         self.synonym_refs = {}
+        self.rnd = random.seed(os.urandom(128))
 
     def compile_synonyms(self, source_file):
         # создаем словарь синонимов
@@ -116,6 +119,7 @@ class Synonymizer(Morphology):
 
     def synonymize_me(self, word):
         # синонимизируем слово
+        #import pdb; pdb.set_trace()
         word = word.lower().strip()
 
         if word not in self.search_dict:
@@ -126,6 +130,22 @@ class Synonymizer(Morphology):
 
         if not synonyms:
             return None
+
+        r_syn = random.sample(synonyms, 1)[0]
+        r_word = self.word_forms[r_syn]
+
+        ret_word = r_word[0]
+
+        # берем форму в нужном виде
+        source_word = self.word_forms[word_id]
+        for i, val in enumerate(source_word):
+            if val == word:
+                ret_word = r_word[i]
+                break
+
+
+        print(ret_word)
+        return
 
         wordforms = self.get_forms(word)
 
@@ -145,5 +165,7 @@ class Synonymizer(Morphology):
 
 if __name__ == '__main__':
     snzr = Synonymizer()
+    snzr.compile('paradigms.txt')
     snzr.compile_synonyms('russian.big.syn')
+    snzr.synonymize_me('палкой')
     print('FA')
